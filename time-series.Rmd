@@ -1,0 +1,106 @@
+---
+title: "Time-series"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(evsim)
+library(dplyr)
+library(lubridate)
+library(dygraphs)
+library(purrr)
+library(tidyr)
+library(ggplot2)
+```
+
+
+
+## EV demand
+
+We can calculate the estimated demand with function `get_demand()`. Get the time-series demand of the first 100 sessions from the simulated data set, by user profile and **hourly** resolution:
+
+```{r get demand}
+
+```
+
+
+We can visualize the estimated demand in an HTML plot using the function `plot_ts`:
+
+```{r plot, echo=TRUE, fig.width=9}
+estimated_demand %>% 
+  plot_ts(ylab = 'Power demand (kW)', fillGraph = T, stackedGraph = T)
+```
+
+
+### Time-resolution makes a difference
+
+Now get the same time-series demand but with **quarterly** resolution:
+
+```{r}
+
+```
+
+
+Answer the following questions:
+
+* Which is the peak demand for every user profile and both time resolutions?
+* Which is the total energy consumed for every user profile and both time resolutions?
+
+
+
+## EV occupancy
+
+Get the EV occupancy of the simulated sessions, by user profile:
+
+```{r get occupancy}
+
+```
+
+
+
+## Multi-core processing
+
+We can discover the number of physical CPUs in our computer with function `parallel::detectCores`:
+```{r number of cores}
+# n_cores <- 
+```
+
+
+Below, an example of calculating the demand from the first 10.000 California EV charging sessions with different number of cores:
+
+```{r sessions, echo = T, eval = F}
+cores_time <- tibble(
+  cores = 1:n_cores,
+  time = 0
+)
+for (mcc in cores_time$cores) {
+  results <- system.time(
+    evsim::california_ev_sessions %>%
+       head(10000) %>%
+       mutate(Profile = "All") %>%
+       get_demand(by = "Profile", resolution = 60, mc.cores = mcc)
+  )
+  cores_time$time[mcc] <- as.numeric(results[3])
+}
+```
+
+Make a column plot (using ggplot2) of the time spent for every number of cores used:
+
+```{r processing time column plot}
+
+```
+
+
+Which is the optimal number of cores to use?
+
+
+
+
+
+
+
+
+

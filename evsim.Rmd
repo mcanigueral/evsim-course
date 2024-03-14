@@ -1,0 +1,186 @@
+---
+title: "Simulating EV sessions"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(evsim)
+library(dplyr)
+library(lubridate)
+library(dygraphs)
+library(purrr)
+library(tidyr)
+```
+
+# Getting started with evsim
+
+the `evsim` package provides the tools to simulate new EV charging session, on the basis of the **Gaussian Mixture Models (GMM)** of different EV user profiles found and modeled with `evprof`. The EV model obtained with`evprof::get_ev_model` function is an object of class `evmodel`, which contains multiple time-cycle models (e.g. Weekdays and Weekends). At the same time, each time-cycle model consists in a combination of multiple EV user profiles and each user profile consists in multiple GMM. 
+
+The `evsim` package also provides some example data (from California ACN) to get started with its functions:
+
+* Charging sessions:
+
+```{r}
+evsim::california_ev_sessions
+```
+
+    * How many sessions are there?
+    * How many different variables are there?
+
+* Charging sessions classified into user profiles
+
+```{r}
+evsim::california_ev_sessions_profiles
+```
+
+    * How many time-cycles are there?
+    * Make a table to summarise the different user profiles in every time-cycle
+    
+* EV model
+
+```{r}
+evsim::california_ev_model
+```
+
+    * Does this information match the characteristics of the sessions provided?
+
+
+
+## Required data to simulate
+
+The only function of `{evsim}` package necessary to simulate new EV sessions is function `simulate_sessions`, which returns a tibble of EV charging sessions. The required input arguments to run this function are:
+
+- The EV model (object of class `evmodel`)
+- Number of daily sessions for each time-cycle model
+- User profiles distribution (ratio of every user profile) and specific charging power (if required)
+- Charging power distribution (ratio of every different charging rate)
+- Dates to simulate
+
+
+### EV model
+
+Use the example EV model:
+
+```{r}
+ev_model <- evsim::california_ev_model
+```
+
+We have 2 different time-cycles in this case (Workdays and Weekends), and each one has its corresponding user profiles. At the same time, each user profile of each time-cycle is modeled by two different models:
+
+- Connection Models: combination of multiple Gaussian distributions of two variables (Connection Start Time and Connection Duration)
+- Energy Models: combination of multiple Gaussian distributions of one variable (Energy)
+
+Take a look to all the parameters inside the EV model using function `get_evmodel_parameters`, and answer the following questions:
+
+* What is the ratio of Visit profile during Workdays?
+* What is the ratio of Visit profile during Weekends?
+* Do the energy models take into account the charging rate?
+* How many GMM does the Worktime profile have?
+
+```{r}
+
+```
+
+
+
+### Number of sessions per day
+
+To set the number of sessions per day to function `simulate_sessions()` we need to pass a tibble with variables `time_cycle` (names corresponding to `evmodel$models$time_cycle`) and `n_sessions` (number of daily sessions per day for each time-cycle model).
+
+Create a plot with the number of sessions for every day in the `evsim::california_ev_sessions` to see the evolution of the EV demand:
+
+```{r number of sessions per day plot}
+
+```
+
+Now create the tibble to pass to `simulate_sessions` function:
+
+```{r n_sessions}
+sessions_day <- 
+```
+
+
+
+### User profiles distribution
+
+Inside the `ev_model` object there is already a default distribution of user profiles, each one with the corresponding ratio. These ratio values were obtained from the clustering process done by `{evprof}` package and represent the presence of every user profile over the total number of sessions clustered. 
+
+Take a look to the original distribution of user profiles with function `get_user_profiles_distribution`:
+```{r}
+
+```
+
+
+However, we may want to simulate different scenarios or use cases where these ratios differ from the current ones. This can be done by setting a new user profiles' distribution tibble, which must contain the variables `time_cycle`, `profile` and `ratio`. Moreover, we can specify the **charging power** of a concrete user profile, with the column `power` in the `user_profiles` object, setting the power values in kW.
+
+Create the `user_profiles` tibble to simulate 75% of Workday sessions for Worktime profile (the rest for Visit profile) and during Weekends only Visit sessions. Moreover, we want to simulate that Worktime sessions charge at 22kW because in the office parking the charging stations are three-phase 32A.
+
+```{r user profiles}
+user_profiles <- 
+```
+
+
+
+### Charging powers distribution
+
+The charging power is not a variable modeled by Gaussian Mixture Models (GMM) like the connection variables or the energy. The purpose of letting the charging power out of the GMM is that it is a variable that depends on the EV model and the charging point, so it may change between scenarios. 
+
+We have configured the Worktime session to charge at 22kW, but we don't have information about the Visitors charging stations. Therefore, configure the `charging_powers` object to be the same than the charging power distribution in the data set `evsim::california_ev_sessions`. You can find the charging power distribution making use of function `get_charging_rates_distribution`.
+
+```{r charging powers}
+charging_powers <- 
+```
+
+
+
+### Datetime values
+
+The function `simulate_sessions()` automatically selects the time-cycle that fits to a specific date. This is why we have to pass a vector of the dates that we want to simulate. Create the Date sequence for the first week of April 2024:
+
+```{r dates}
+dates_sim <- 
+```
+
+Another datetime argument that the simulation function needs is the time resolution of the datetime variables of the sessions (connection start, connection end, charging end, ...). For this example we will set a time resolution of 15 minutes, so the argument will be `resolution = 15`.
+
+
+
+## Simulation
+
+We have now all required data and we are ready to simulate the new sessions:
+
+```{r estimate sessions}
+sessions_estimated <- simulate_sessions(
+
+)
+```
+
+
+Answer the following questions:
+
+* How many sessions did you obtain? Does it make sense according to the number of sessions per day?
+* Do the time variables have the right time resolution?
+* The `Energy` required is `Power` x `ChargingHours`?
+
+
+Check that the number of sessions of each power rate corresponds to our configuration:
+
+```{r}
+
+```
+
+
+# Arnhem EV model
+
+Follow the same steps than the previous chapter but now with your own EV model created with the Arnhem data set. Simulate the EV sessions corresponding to the next day of the data set.
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,89 @@
+---
+title: "Custom evmodel"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(evsim)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(purrr)
+```
+
+
+## Simplifying our model
+
+Read the EV model JSON file that you built from Arnhem data set:
+
+```{r}
+
+```
+
+
+The `evmodel` object obtained with `evprof` contains all statistic parameters of the Gaussian Mixture Models for both connection and energy models. However, these GMM can be quite complex with a lot of clusters (mixtures). To check the complexity of the models and describe all parameters within the JSON file, use the function `get_evmodel_parameters`:
+
+```{r full ev model parameters}
+
+```
+
+Now use the function `get_evmodel_summary` to simplify these parameters and see them in a natural scale instead of logarithmic, and a single Gaussian Model per user profile and time-cycle:
+
+```{r simplified ev model}
+
+```
+
+Make a scatter plot (using ggplot2 package) of the connection GMM values with a color for every user profile. Do these points correspond to the centroids of the user profiles?
+
+```{r connection GMM plot}
+
+```
+
+
+
+## Save model to Excel
+
+The list format from function `get_evmodel_summary` is also useful to save the model in Excel, since it can be saved directly in an Excel workbook where every time-cycle will be a different worksheet. Do that using `writexl` package.
+
+```{r save model to Excel}
+
+```
+
+
+
+## Designing a custom model
+
+The Excel file created with the previous command can be used as a template to define our custom user profiles and parameters. Think about 3 different user profiles that could be identified in a use case in Japan:
+
+* 
+* 
+*
+
+After editing the file we can read it again using `purrr` iteration and `readxl` functions:
+
+```{r, eval=F}
+custom_model <- purrr::map(
+  readxl::excel_sheets("ev_model_custom.xlsx") %>% purrr::set_names(),
+  ~ readxl::read_excel("ev_model_custom.xlsx", sheet = .x)
+)
+```
+
+Then, functions `get_connection_models_from_parameters` and `get_energy_models_from_parameters` can create the objects required as `connection_GMM` and `energy_GMM` in `evsim::get_ev_model` function.
+
+```{r connection GMM}
+
+```
+
+```{r energy GMM}
+
+```
+
+Now create the EV model using function `evsim::get_ev_model`, setting properly the rest of parameters:
+
+```{r get evmodel}
+
+```
+
+
+
