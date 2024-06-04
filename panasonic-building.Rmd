@@ -1,0 +1,199 @@
+---
+title: "The Panasonic use case"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 9)
+library(evsim)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(purrr)
+library(dutils) # remotes::install_github('mcanigueral/dutils)
+```
+
+## Introduction
+
+This is an RMarkdown file with the objective to practice EV modelling and simulation based on packages `evprof` and `evsim`, considering the Panasonic use case. 
+
+Some previous tasks will be required for the development of these exercises:
+
+1. **Define the use case**: select a building with potential to host a charging hub, and get its power demand profile from 2023.
+2. **Define the EV user behaviour**: analyse the daily flow of people to define the different EV user profiles that the charging hub would have to host.
+3. **Define different scenarios**: the EV user behavior hardly changes over time, but the number of daily charging sessions and the power that these sessions are using may change considering different time horizons. 
+
+
+## Custom Panasonic EV model
+
+There are two different options to build an EV model for the Panasonic use case:
+
+1. Using `evprof`: apply a Gaussian Mixture Models Clustering to real data set of charging sessions to discover different EV user profiles from the data.
+2. Using `evsim`: Create custom Gaussian distributions based on estimations of the potential EV user profiles. 
+
+
+If a real data set of charging sessions is available in some of the Panasonic buildings, the first approach is the recommended one. If that's the case, you can follow the tutorial `evprof.Rmd` from the [evprof-course](https://github.com/mcanigueral/evprof-course) project.
+
+This tutorial continues considering the approach number 2, using `evsim` to create a custom EV model from an Excel file with the estimated EV user profiles' Gaussian distributions. A template file is provided in this project under in `data/evmodel_template.xlsx`. 
+
+
+### Building selection
+
+The first step is to select a real building where Panasonic is monitoring energy consumption/production that, in the near future, could host a charging hub for electric vehicles. Depending on the type of building we can do different analysis. For example, if the building has both offices and apartments the mix of EV user profiles will be interesting to analyse the morning peak, the use of PV energy, the evening peak, etc. On the other hand, if the building is fully residential, it will be interesting to analyse the growth of the evening peak due to EVs, the need to increase contracted power or grid connection to install charging points, etc.
+
+**Briefly describe the selected use case and the building properties**.
+
+
+
+### Time-cycles
+
+Modify the Excel file with the different relevant time-cycles that could be present in the use case. Remember that every spreadsheet in the Excel file is a different time-cycle.
+
+
+### User profiles
+
+For every time-cycle (i.e. spreadsheet of the Excel file) we have to configure different EV user profiles. Every user profile must be configured with a Gaussian distribution (i.e. mean and standard deviation) for these different attributes:
+
+* **Connection start time**: hour when the vehicle is connected (in hours)
+* **Connection duration**: hours that the vehicle remains connected (in hours)
+* **Energy**: energy charged during the charging session (in kWh)
+
+Also, for every user profile, the ratio must be configured. The ratio is the weight of the corresponding user profile over the total number of daily sessions. It has to be between 0 and 1 (changed from evsim v1.5.0).
+
+To estimate the average energy charged we can make use of the distance driven by the users (in km) and the energy consumption estimation of the vehicles (in kWh/km). A good data source for the energy consumption according to the EV model is the cheatsheet provided by [ev-database.org](https://ev-database.org/cheatsheet/energy-consumption-electric-car). With newer EV models that have bigger batteries, some users may skip charging every day but twice or three times a week. This should be reflected in the average Energy charge with higher values, and in the number of daily sessions with lower values.
+
+
+
+### Create the model
+
+After editing the custom EV model Excel file, you can now read it and create the `evmodel` object with function `evsim::get_custom_ev_model` (introduced from evsim v1.5.0).
+
+```{r}
+params_lst <- map(
+  readxl::excel_sheets("data/evmodel_template.xlsx"),
+  ~ readxl::read_xlsx("data/evmodel_template.xlsx", sheet = .x)
+)
+```
+
+
+```{r}
+
+```
+
+
+
+## Simulate EV charging sessions
+
+Once we have the EV model, we can simulate the expected EV demand in different scenarios. For this exercise, we need to answer the following questions:
+
+* How many EV charging sessions do we have for every time cycle?
+* What is the expected charging power of these EV sessions?
+* What time resolution do we want to simulate?
+
+Simulate the expected EV charging sessions, in 15-minute resolution, for a whole year on the following scenarios:
+
+1. **Current scenario (2023)**: low EV penetration (3.2% of EV stock) with mixed charging power distribution
+2. **Future scenario (2035)**: high EV penetration (31% of EV stock) with mostly three-phase power charge
+
+These values of EV stock share represent the World EV stock projection obtained from the [IEA EV Data Explorer](https://www.iea.org/data-and-statistics/data-tools/global-ev-data-explorer). The current EV stock share in Japan is a 0.8%, so you can modify these values if desired.
+
+Moreover, from the IEA Global EV Outlook 2024 report, we can read the following about Japan:
+*Japan is a rare example of an advanced economy where small models – both for electric and ICE vehicles – appeal to a large consumer base, motivated by densely populated cities with limited parking space, and policy support. In 2023, about 60% of total ICE sales were for small models, and over half of total electric sales. Two electric cars from the smallest “Kei” category, the Nissan Sakura and Mitsubishi eK-X, accounted for nearly 50% of national electric car sales alone, and both are priced between JPY 2.3 million (Japanese yen) and JPY 3 million (USD 18 000 to USD 23 000). However, this is still more expensive than best-selling small ICE cars (e.g. Honda N Box, Daihatsu Hijet, Daihatsu Tanto, Suzuki Spacia, Daihatsu Move), priced between USD 13 000 and USD 18 000. In 2024, Nissan announced that it would aim to reach cost parity (of production, not retail price) between electric and ICE cars by 2030.*
+
+**Use this information and other sources you can find about the type of cars used in Japan to estimate the charging power (and energy charged that has to be configured in the EV modelling section) of the sessions.**
+
+For every scenario save the following results in Excel files:
+
+* EV charging sessions table
+* EV time-series demand, in 15 minutes resolution
+
+### Current scenario (2023)
+
+**Create the required code to simulate the EV charging sessions of the 2023 scenario, save the results and plot the time-series demand.**
+
+```{r}
+# ev_sessions_2023 <- 
+```
+
+```{r}
+# ev_demand_2023 <- 
+```
+
+
+
+### Future scenario (2035)
+
+**Create the required code to simulate the EV charging sessions of the 2035 scenario, save the results and plot the time-series demand.**
+
+```{r}
+# ev_sessions_2035 <- 
+```
+
+```{r}
+# ev_demand_2035 <- 
+```
+
+
+## Building Energy demand
+
+The impact of the EV demand in the power grid may be positive or negative depending on the rest of the power demand in the system. It happens the same in a building that incorporates a charging hub. Therefore, it is interesting to see how the simulated EV demand fits with the real building demand. 
+
+**Obtain the power profile of the selected building for the whole 2023 year, if possible in 15 minute resolution, and store it in a tibble called `building_demand` with columns `datetime` and `power`.**
+
+```{r}
+# building_demand <- 
+```
+
+
+Once we have the building demand profile it must be pre-processed in order to be joined with the EV time-series demand. Use the following functions:
+
+* Decrease time resolution with function `dutils::decrease_timeseries_resolution` if resolution is higher than 15 minutes (e.g. 5 minutes): 
+
+```{r}
+# building_demand <- dutils::decrease_timeseries_resolution(
+#   building_demand, resolution_mins = 15, method = "average"
+# )
+```
+
+* Increase time resolution with function `dutils::increase_timeseries_resolution` if resolution is lower than 15 minutes (e.g. 60 minutes):
+    
+```{r}
+# building_demand <- dutils::increase_timeseries_resolution(
+#   building_demand, resolution_mins = 15, method = "interpolate"
+# )
+```
+
+* Aggregate the EV demand with function `dutils::aggregate_timeseries`:
+
+```{r}
+# ev_demand_total <- dutils::aggregate_timeseries(
+#   ev_demand_2023, varname = "evs"
+# )
+```
+
+* Join the 2 data sets with:
+
+```{r}
+# total_demand <- dplyr::left_join(
+#   ev_demand_total, building_demand, by = "datetime"
+# )
+```
+
+* Plot the time-series with function `dutils::dyplot`:
+
+```{r}
+# total_demand %>% dyplot(stackedGraph = TRUE)
+```
+
+
+**How is the impact of the EV demand when added on top of the building demand profile? Answer the following questions:**
+
+* Which is the extra power peak due to EVs for the current scenario? And for the future scenario?
+* What percentage respect to the original building demand does represent this extra power peak due to EVs for the current scenario? And for the future scenario?
+* What is the total cost related to increasing the required contracted power with the utility in both scenarios?
+* Do you think that the building power demand (without EVs) will remain the same in 2035 scenario?
+
+
+
+
+

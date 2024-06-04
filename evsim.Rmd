@@ -28,6 +28,15 @@ evsim::california_ev_sessions
 
     * How many sessions are there?
     * How many different variables are there?
+    * Histogram grid of `Power`, `Energy`, `ConnectionHours` and `ChargingHours`
+    * Which values of current correspond to the peaks in the Power histogram, assuming single-phase connections?
+    * Which is the time period of the data set?
+    * Which is the time resolution of the date-time variables?
+    * Which is the time zone of the date-time variables?
+    * How many different charging points do we have?
+    * How many different user IDs do we have?
+    
+    
 
 * Charging sessions classified into user profiles
 
@@ -77,7 +86,7 @@ Take a look to all the parameters inside the EV model using function `get_evmode
 * What is the ratio of Visit profile during Workdays?
 * What is the ratio of Visit profile during Weekends?
 * Do the energy models take into account the charging rate?
-* How many GMM does the Worktime profile have?
+* How many connection Gaussian Models does the Worktime profile have for Workday time-cycle?
 
 ```{r}
 
@@ -162,6 +171,7 @@ Answer the following questions:
 
 * How many sessions did you obtain? Does it make sense according to the number of sessions per day?
 * Do the time variables have the right time resolution?
+* Is the `ConnectionHours` variable the difference between `ConnectionStartDateTime` and `ConnectionEndDateTime`?
 * The `Energy` required is `Power` x `ChargingHours`?
 
 

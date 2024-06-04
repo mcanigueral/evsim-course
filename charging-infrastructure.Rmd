@@ -1,0 +1,118 @@
+---
+title: "Charging infrastructure assessment"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.width = 9)
+library(evsim)
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(purrr)
+library(dutils) # remotes::install_github('mcanigueral/dutils)
+```
+
+The code of this RMarkdown document uses the objects created in the file `panasonic-building.Rmd`. In the simulation of the EV demand, we have assumed that all these EVs could charge within the building, so the corresponding charging infrastructure has to be installed in the parking garage, for example. In this document we will try to size the optimal charging infrastructure and analyse its impact on the power grid.
+
+
+## Occupancy
+
+The occupancy is the number of vehicles that are connected at the same time. The occupancy of a specific date-time sequence can be obtained with function `evsim::get_occupancy`.
+
+**Obtain the time-series occupancy for both scenarios (2023 and 2035).**
+
+```{r}
+# ev_occupancy_2023 <- 
+# ev_occupancy_2035 <-
+```
+
+Plot the time-series occupancy profiles:
+```{r}
+
+```
+
+
+## Number of charging points required
+
+The easiest way to size a charging infrastructure is to meet the maximum occupancy of its EV demand. This way, there will be charging points available for all EV users. Calculate, the number of charging points required for both scenarios:
+
+* Current scenario (2023): 
+* Future scenario (2035):
+
+**Answer the following questions:**
+
+* Do you think that it is an appropriate number of charging points for this EV demand?
+* Will all charging points be occupied most of time?
+
+
+In order to avoid oversizing, we have developed the "occupancy duration curve" approach, based on the "load duration curve" term. Plot the occupancy duration curve for all EV user profiles aggregated to see if a lower number of charging points would be more optimal:
+
+```{r}
+
+```
+
+**Would you change the required number of charging points now?**
+
+* Current scenario (2023): 
+* Future scenario (2035):
+
+
+
+
+
+## Simulate the charging infrastructure
+
+Function `evsim::add_charging_infrastructure` adds the variables `ChargingStation` and `Socket` to the charging sessions data set, assigning every charging session to a specific charging point. By default, every Charging station has 2 different Sockets. This function also allows to consider a threshold on the occupancy duration curve through the parameter `duration_th`, to discard over-sizing the installation. 
+
+Use this function considering `duration_th = 0` for both scenarios:
+
+```{r}
+# ev_sessions_points_2023 <- 
+# ev_sessions_points_2035 <- 
+```
+
+Check that every charging station has a maximum of 2 vehicles connected using function `get_occupancy()` with the parameter `by="ChargingStation"`:
+
+```{r}
+
+```
+
+
+Now find the names of the different charging stations that have been assigned:
+```{r}
+
+```
+
+**Does the number of charging points coincide with the maximum occupancy in both scenarios?**
+
+
+Now, use `duration_th = 25`:
+```{r}
+# ev_sessions_points_2023_2 <- 
+# ev_sessions_points_2035_2 <- 
+```
+
+The usage of `duration_th > 0` supposes a loss of sessions that can't find a place to charge. **What is the percentage of sessions that have been discarded?**
+
+Now find again the names of the different charging stations that have been assigned to check that we need less charging points than before:
+```{r}
+
+```
+
+
+## Grid capacity required
+
+Consider that we assume that ALL EV users must connect, so we install the number of charging points corresponding to the maximum occupancy in both scenarios. 
+
+**Answer the following questions:**
+
+* What is the appropriate maximum power for every charging point?
+* What is the total power required for the charging hub in the current scenario? And for the future scenario?
+* Is it feasible to increase this amount of contracted power for both scenarios?
+
+
+
+***
+
+
