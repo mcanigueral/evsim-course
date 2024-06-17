@@ -115,6 +115,50 @@ For every scenario save the following results in Excel files:
 # ev_sessions_2023 <- 
 ```
 
+Modify the EV demand during summer holidays:
+
+* Select the dates of the holidays
+```{r}
+holidays <- seq.Date(from = dmy(13082023), to = dmy(20082023), by = "day")
+holidays
+```
+
+* Replace the sessions of the holiday days with Weekend sessions:
+
+```{r, eval = FALSE}
+for (i in seq_len(length(holidays))) {
+  holiday <- holidays[i]
+  
+  # Simulate holiday sessions
+  ev_sessions_holiday <- simulate_sessions(
+    evmodel, 
+    sessions_day = tibble(
+      time_cycle = c("Sunday"),
+      n_sessions = c(3)
+    ),
+    user_profiles = NULL,
+    charging_powers = tibble(
+      power = 11,
+      ratio = 1
+    ),
+    dates = dmy(13082023), # It was a Sunday
+    resolution = 15
+  )
+  date(ev_sessions_holiday$ConnectionStartDateTime) <- holiday
+  ev_sessions_holiday <- adapt_charging_features(
+    ev_sessions_holiday, time_resolution = 15, power_resolution = 0.01
+  )
+  
+  # Replace sessions
+  ev_sessions_2023 <- ev_sessions_2023 %>% 
+    filter(date(ConnectionStartDateTime) != holiday) %>% 
+    bind_rows(ev_sessions_holiday) %>% 
+    arrange(ConnectionStartDateTime)
+}
+```
+
+
+
 ```{r}
 # ev_demand_2023 <- 
 ```
