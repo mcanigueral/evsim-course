@@ -155,6 +155,11 @@ for (i in seq_len(length(holidays))) {
     bind_rows(ev_sessions_holiday) %>% 
     arrange(ConnectionStartDateTime)
 }
+
+ev_sessions_2023 <- ev_sessions_2023 %>% 
+  mutate(
+    Session = paste0("S", row_number())
+  )
 ```
 
 
